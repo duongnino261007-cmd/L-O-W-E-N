@@ -1,24 +1,32 @@
-const Discord = require('discord.js');
-const {token} = require('./auth.json');
-const bot = new Discord.Client();
+client.on('voiceStateUpdate', async (oldState, newState) => {
+    const channel = newState.guild.channels.cache.get(
+        NOTIFICATION_CHANNEL_ID
+    );
 
-bot.login(token);
+    if (!channel) return;
 
-bot.once('ready', () =>{
-    console.log(Bot ready, logged in as ${bot.user.tag}!);
-})
-
-bot.on('voiceStateUpdate', (oldMember, newMember) => {
-    let newUserChannel = newMember.voiceChannelID
-    let oldUserChannel = oldMember.voiceChannelID
-
-    if(newUserChannel === 712677767333937284) {
-        // User Joins a voice channel
-        console.log("Joined VC1")
-
-    } else if(newUserChannel !== 712677767333937284){
-        // User leaves a voice channel
-        console.log("Left VC1")
-
+    // JOIN
+    if (!oldState.channelId && newState.channelId) {
+        channel.send(
+            `🟢 **${newState.member.user.username}** đã vào **${newState.channel.name}**`
+        );
     }
-})
+
+    // LEAVE
+    if (oldState.channelId && !newState.channelId) {
+        channel.send(
+            `🔴 **${oldState.member.user.username}** đã rời **${oldState.channel.name}**`
+        );
+    }
+
+    // MOVE
+    if (
+        oldState.channelId &&
+        newState.channelId &&
+        oldState.channelId !== newState.channelId
+    ) {
+        channel.send(
+            `🔄 **${newState.member.user.username}** chuyển từ **${oldState.channel.name}** → **${newState.channel.name}**`
+        );
+    }
+});
